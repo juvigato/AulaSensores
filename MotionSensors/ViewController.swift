@@ -11,7 +11,7 @@ import CoreMotion
 
 class ViewController: UIViewController {
     
-    var vetorImg: [UIImage] = [#imageLiteral(resourceName: "estela"), #imageLiteral(resourceName: "estelaLight")]
+    var vetorImg: [UIImage] = [#imageLiteral(resourceName: "estela"), #imageLiteral(resourceName: "estelaLight"), #imageLiteral(resourceName: "estelaRB")]
     
     @IBOutlet weak var horizon: UIView!
     
@@ -53,11 +53,12 @@ class ViewController: UIViewController {
                                     
                                     //USAR MODULO
                                     //somar a aceleracao de todos os eixos com modulos
-                                    let aceleracao = abs(x) + abs(y) + abs(z)
-                                    
+                                    //let aceleracao = abs(x) + abs(y) + abs(z)
                                     //será que posso usar o vetor direto ao inves da flag --> pode mas um booleano dura menos tempo
                                     //mudar a imagem aqui dentro, mas ter certeza que tenha uma flag para que para mudar para a img A, esteja na img B, e vice e versa
-                                    if aceleracao > 7{
+                                    
+                                    
+                                    if x > 1 {
                                         self.imageEstela.image = self.vetorImg[1]
                                         self.flagImage = true
                                     } else {
@@ -72,36 +73,24 @@ class ViewController: UIViewController {
                                     }
                                     
                                     
+                                    if y  > 1 {
+                                        self.imageEstela.image = self.vetorImg[2]
+                                        self.flagImage = true
+                                    } else {
+                                        if self.flagImage == true{
+                                            self.timerImg = self.timerImg + 1
+                                            if self.timerImg == 100{
+                                                self.timerImg = 0
+                                                self.imageEstela.image = self.vetorImg[0]
+                                                self.flagImage = false
+                                            }
+                                        }
+                                    }
                                     //criar uma variavel para o timer para que ela fique contando enquanto esta com a img1, e quando ela ficar com a img2, ele zera e congta 60
-                                    
-                                    
-                                    
-//                                    if self.flagImage == false && aceleracao > 0.3{
-//                                        //mudar img
-//                                        self.timerImg = 0
-//
-//                                        self.flagImage = true
-//                                        while self.timerImg < 1000 &&  self.flagImage == true{
-//                                            self.timerImg = self.timerImg + 1
-//                                            self.imageEstela.image = self.vetorImg[1]
-//                                        }
-//                                    } else {
-//                                        self.imageEstela.image = self.vetorImg[0]
-//                                        self.flagImage = false
-//                                    }
                                 }
             })
             RunLoop.current.add(timer, forMode: RunLoop.Mode.default)
         }
     }
-    
-    //Ao tocar na tela, a orientação atual do dispositivo passa a ser considerada a de referência com relação à qual os dados serão calculados
-//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        if let att = motion.deviceMotion?.attitude {
-//            referenceAttitude = att
-//        }
-//    }
-    
-
 }
 

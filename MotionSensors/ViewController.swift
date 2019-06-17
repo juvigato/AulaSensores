@@ -10,21 +10,25 @@ import UIKit
 import CoreMotion
 
 class ViewController: UIViewController {
-
-    @IBOutlet weak var accX: UILabel!
-    @IBOutlet weak var accY: UILabel!
-    @IBOutlet weak var accZ: UILabel!
     
+    var vetorImg: [UIImage] = [#imageLiteral(resourceName: "estela"), #imageLiteral(resourceName: "estelaLight")]
     
     @IBOutlet weak var horizon: UIView!
     
-    var referenceAttitude:CMAttitude?
+    @IBOutlet weak var imageEstela: UIImageView!
     
     let motion = CMMotionManager()
     
     var lastXUpdate = 0
     var lastYUpdate = 0
     var lastZUpdate = 0
+    
+    //false para a imagem 1 (estela apagada)
+    var flagImage:Bool = false
+    
+    //variavel para controlar o tempo da imagem da estela brilhando
+    var timerImg:Int = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         startDeviceMotion()
@@ -42,39 +46,62 @@ class ViewController: UIViewController {
             var timer = Timer(fire: Date(), interval: (1.0 / 60.0), repeats: true,
                                block: { (timer) in
                                 if let data = self.motion.deviceMotion {
-                                    var relativeAttitude = data.attitude
-                                    if let ref = self.referenceAttitude{
-                                        //Esta função faz a orientação do dispositivo ser calculado com relação à orientação de referência passada
-                                        relativeAttitude.multiply(byInverseOf: ref)
+                                    print("oi")
+                                    let x = data.userAcceleration.x
+                                    let y = data.userAcceleration.y
+                                    let z = data.userAcceleration.z
+                                    
+                                    //USAR MODULO
+                                    //somar a aceleracao de todos os eixos com modulos
+                                    let aceleracao = abs(x) + abs(y) + abs(z)
+                                    
+                                    //será que posso usar o vetor direto ao inves da flag --> pode mas um booleano dura menos tempo
+                                    //mudar a imagem aqui dentro, mas ter certeza que tenha uma flag para que para mudar para a img A, esteja na img B, e vice e versa
+                                    if aceleracao > 7{
+                                        self.imageEstela.image = self.vetorImg[1]
+                                        self.flagImage = true
+                                    } else {
+                                        if self.flagImage == true{
+                                            self.timerImg = self.timerImg + 1
+                                            if self.timerImg == 100{
+                                                self.timerImg = 0
+                                                self.imageEstela.image = self.vetorImg[0]
+                                                self.flagImage = false
+                                            }
+                                        }
                                     }
                                     
-                                    let x = relativeAttitude.pitch
-                                    let y = relativeAttitude.roll
-                                    let z = relativeAttitude.yaw
                                     
-                                    self.accX.text = String(format: "%.3f", x)
-                                    self.accY.text = String(format: "%.3f", y)
-                                    self.accZ.text = String(format: "%.3f", z)
+                                    //criar uma variavel para o timer para que ela fique contando enquanto esta com a img1, e quando ela ficar com a img2, ele zera e congta 60
                                     
-                                    let gravity = data.gravity
-                                    //Um pouco de matemágica para rotacionar o background de acordo com a orientação do dispositivo - neste caso, usando o vetor da gravidade para este cálculo
-                                    self.horizon.transform = CGAffineTransform(rotationAngle: CGFloat(atan2(gravity.x, gravity.y) - .pi))
+                                    
+                                    
+//                                    if self.flagImage == false && aceleracao > 0.3{
+//                                        //mudar img
+//                                        self.timerImg = 0
+//
+//                                        self.flagImage = true
+//                                        while self.timerImg < 1000 &&  self.flagImage == true{
+//                                            self.timerImg = self.timerImg + 1
+//                                            self.imageEstela.image = self.vetorImg[1]
+//                                        }
+//                                    } else {
+//                                        self.imageEstela.image = self.vetorImg[0]
+//                                        self.flagImage = false
+//                                    }
                                 }
             })
-            
             RunLoop.current.add(timer, forMode: RunLoop.Mode.default)
         }
     }
     
     //Ao tocar na tela, a orientação atual do dispositivo passa a ser considerada a de referência com relação à qual os dados serão calculados
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let att = motion.deviceMotion?.attitude {
-            referenceAttitude = att
-        }
-    }
+//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        if let att = motion.deviceMotion?.attitude {
+//            referenceAttitude = att
+//        }
+//    }
     
-    
-
 
 }
 
